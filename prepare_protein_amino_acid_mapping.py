@@ -97,6 +97,34 @@ def parse_fasta_and_save_mapping(file_path, output_path, VALID_AA, UNKNOWN_AA):
     
     return protein_mapping
 
+def save_amino_numeric_mapping(VALID_AA, Unknown_AA, output_path, numeric_output_path):
+    """
+    Saves the amino acid to numeric mapping to a JSON file.
+    Format: {amino_acid: numeric_value}
+    """
+    amino_numeric_mapping = {}
+    numeric_amino_mapping = {}
+
+    ## using '#' as padding token with 0 value
+    amino_numeric_mapping['#'] = 0
+    numeric_amino_mapping[0] = '#'
+
+    for i, aa in enumerate(VALID_AA):
+        amino_numeric_mapping[aa] = i + 1
+        numeric_amino_mapping[i + 1] = aa
+
+    ## using 'X' as unknown amino acid with len(VALID_AA) + 1 value
+    amino_numeric_mapping[Unknown_AA] = len(VALID_AA) + 1
+    numeric_amino_mapping[len(VALID_AA) + 1] = Unknown_AA
+    
+    ## save the mappings to the output path
+    with open(output_path, 'w') as f:
+        json.dump(amino_numeric_mapping, f, indent=2)
+
+    ## save the numeric mappings to the output path with _numeric suffix
+    with open(numeric_output_path, 'w') as f:
+        json.dump(numeric_amino_mapping, f, indent=2)
+
 
 if __name__ == '__main__':
     # Uncomment the function you want to run:
@@ -110,7 +138,17 @@ if __name__ == '__main__':
 
     print(f"Valid amino acids: {VALID_AA}")
     print(f"Unknown amino acid: {UNKNOWN_AA}")
-    
-    print("Parsing FASTA file and saving mapping...")
+
+    amino_numeric_mapping_path = 'data/Train/amino_numeric_mapping.json'
+    numeric_amino_mapping_path = 'data/Train/amino_numeric_mapping_numeric.json'
+
+    print(f"Saving amino acid to numeric mapping to {amino_numeric_mapping_path}")
+    print(f"Saving numeric amino acid to mapping to {numeric_amino_mapping_path}")
+
+    save_amino_numeric_mapping(VALID_AA, UNKNOWN_AA, amino_numeric_mapping_path, numeric_amino_mapping_path)
+    print("Saved amino acid to numeric mapping")
+    print("Saved numeric amino acid to mapping")
+
+    print(f"Parsing FASTA file and saving mapping to {output_path}")
     parse_fasta_and_save_mapping(file_path, output_path, VALID_AA, UNKNOWN_AA)
 

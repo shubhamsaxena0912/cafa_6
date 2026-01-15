@@ -193,6 +193,45 @@ def save_data(data, output_path):
     print(f"Saved {len(data)} samples to {output_path}")
 
 
+def save_go_terms_idx_mapping(go_terms_dict, go_terms_idx_mapping_path, idx_go_terms_mapping_path):
+    """
+    Save GO terms to index mapping to JSON file.
+    
+    Args:
+        go_terms_dict: Dictionary mapping EntryID to list of GO terms
+        go_terms_idx_mapping_path: Path to save GO term -> index mapping
+        idx_go_terms_mapping_path: Path to save index -> GO term mapping
+    """
+    # Collect all unique GO terms from all protein entries
+    all_go_terms = set()
+    for go_terms_list in go_terms_dict.values():
+        all_go_terms.update(go_terms_list)
+    
+    # Sort GO terms for consistent ordering
+    sorted_go_terms = sorted(all_go_terms)
+    
+    # Create mappings
+    go_terms_idx_mapping = {}
+    idx_go_terms_mapping = {}
+    
+    for idx, go_term in enumerate(sorted_go_terms):
+        go_terms_idx_mapping[go_term] = idx
+        idx_go_terms_mapping[idx] = go_term
+    
+    # Save the mappings to the output paths
+    os.makedirs(os.path.dirname(go_terms_idx_mapping_path), exist_ok=True)
+    with open(go_terms_idx_mapping_path, 'w') as f:
+        json.dump(go_terms_idx_mapping, f, indent=2)
+    
+    os.makedirs(os.path.dirname(idx_go_terms_mapping_path), exist_ok=True)
+    with open(idx_go_terms_mapping_path, 'w') as f:
+        json.dump(idx_go_terms_mapping, f, indent=2)
+    
+    print(f"Saved {len(go_terms_idx_mapping)} GO terms to index mapping to {go_terms_idx_mapping_path}")
+    print(f"Saved {len(idx_go_terms_mapping)} index to GO terms mapping to {idx_go_terms_mapping_path}")
+
+
+
 def main():
     """
     Main function to prepare and preprocess the data.
@@ -200,6 +239,8 @@ def main():
     # File paths
     protein_mapping_path = 'data/Train/protein_amino_acid_mapping.json'
     train_terms_path = 'data/Train/train_terms.tsv'
+    go_terms_idx_mapping_path = 'data/Train/go_terms_idx_mapping.json'
+    idx_go_terms_mapping_path = 'data/Train/idx_go_terms_mapping.json'
     
     # Output paths
     output_dir = 'data/processed'
@@ -220,6 +261,10 @@ def main():
     # Step 2: Load GO terms
     print("\n[Step 2] Loading GO terms...")
     go_terms_dict = load_go_terms(train_terms_path)
+
+    ## Step 2.1: Save GO terms to index mapping
+    print("\n[Step 2.1] Saving GO terms to index mapping...")
+    save_go_terms_idx_mapping(go_terms_dict, go_terms_idx_mapping_path, idx_go_terms_mapping_path)
     
     # Step 3: Map sequences to GO labels
     print("\n[Step 3] Mapping sequences to GO labels...")
